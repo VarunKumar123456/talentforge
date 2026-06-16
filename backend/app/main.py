@@ -31,11 +31,7 @@ from app.models import message as message_model
 from app.websocket_manager import manager
 
 
-os.makedirs(
-    "uploads",
-    exist_ok=True
-)
-
+os.makedirs("uploads", exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -44,11 +40,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
 allowed_origins = [
     "http://localhost:5173",
-    FRONTEND_URL
+    "http://127.0.0.1:5173",
+    "https://talentforge-sepia.vercel.app",
 ]
+
+if FRONTEND_URL:
+    allowed_origins.append(FRONTEND_URL)
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,7 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.include_router(auth.router)
 app.include_router(company.router)
@@ -78,20 +76,14 @@ async def websocket_messages(
     websocket: WebSocket,
     application_id: int
 ):
-    await manager.connect(
-        application_id,
-        websocket
-    )
+    await manager.connect(application_id, websocket)
 
     try:
         while True:
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        manager.disconnect(
-            application_id,
-            websocket
-        )
+        manager.disconnect(application_id, websocket)
 
 
 app.mount(

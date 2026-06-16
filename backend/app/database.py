@@ -4,7 +4,15 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import DATABASE_URL
 
-engine = create_engine(DATABASE_URL)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    connect_args={
+        "sslmode": "require"
+    }
+)
 
 SessionLocal = sessionmaker(
     bind=engine,
@@ -12,11 +20,15 @@ SessionLocal = sessionmaker(
     autocommit=False
 )
 
+
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
+
     finally:
         db.close()
+
 
 Base = declarative_base()
