@@ -106,3 +106,10 @@ def health_check():
         "status": "ok",
         "app": "TalentForge"
     }
+    
+@app.get("/debug-cors")
+def debug_cors():
+    return {
+        "frontend_url": FRONTEND_URL,
+        "allowed_origins": allowed_origins
+    }
