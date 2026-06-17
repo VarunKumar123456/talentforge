@@ -1,17 +1,13 @@
 import os
-import smtplib
-
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+
+resend.api_key = RESEND_API_KEY
 
 
 def send_email(
@@ -19,48 +15,28 @@ def send_email(
     subject: str,
     body: str
 ):
-    print("========== EMAIL DEBUG ==========")
-    print("EMAIL_HOST:", EMAIL_HOST)
-    print("EMAIL_PORT:", EMAIL_PORT)
-    print("EMAIL_USER:", EMAIL_USER)
-    print("EMAIL_PASSWORD EXISTS:", bool(EMAIL_PASSWORD))
+    print("========== RESEND EMAIL DEBUG ==========")
+    print("RESEND_API_KEY EXISTS:", bool(RESEND_API_KEY))
     print("TO:", to_email)
-
-    if not EMAIL_USER or not EMAIL_PASSWORD:
-        print("❌ Email not configured")
-        return False
-
-    message = MIMEMultipart()
-    message["From"] = EMAIL_USER
-    message["To"] = to_email
-    message["Subject"] = subject
-
-    message.attach(
-        MIMEText(body, "html")
-    )
+    print("SUBJECT:", subject)
 
     try:
-        server = smtplib.SMTP(
-            EMAIL_HOST,
-            EMAIL_PORT
+        if not RESEND_API_KEY:
+            print("❌ RESEND_API_KEY not configured")
+            return False
+
+        response = resend.Emails.send(
+            {
+                "from": "TalentForge <onboarding@resend.dev>",
+                "to": [to_email],
+                "subject": subject,
+                "html": body,
+            }
         )
-
-        server.starttls()
-
-        server.login(
-            EMAIL_USER,
-            EMAIL_PASSWORD
-        )
-
-        server.sendmail(
-            EMAIL_USER,
-            to_email,
-            message.as_string()
-        )
-
-        server.quit()
 
         print("✅ Email sent successfully")
+        print("RESPONSE:", response)
+
         return True
 
     except Exception as e:
