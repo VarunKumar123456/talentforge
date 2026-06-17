@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USER = os.getenv("EMAIL_USER")
@@ -20,9 +19,16 @@ def send_email(
     subject: str,
     body: str
 ):
+    print("========== EMAIL DEBUG ==========")
+    print("EMAIL_HOST:", EMAIL_HOST)
+    print("EMAIL_PORT:", EMAIL_PORT)
+    print("EMAIL_USER:", EMAIL_USER)
+    print("EMAIL_PASSWORD EXISTS:", bool(EMAIL_PASSWORD))
+    print("TO:", to_email)
+
     if not EMAIL_USER or not EMAIL_PASSWORD:
-        print("Email not configured")
-        return
+        print("❌ Email not configured")
+        return False
 
     message = MIMEMultipart()
     message["From"] = EMAIL_USER
@@ -38,6 +44,7 @@ def send_email(
             EMAIL_HOST,
             EMAIL_PORT
         )
+
         server.starttls()
 
         server.login(
@@ -53,7 +60,10 @@ def send_email(
 
         server.quit()
 
-        print("Email sent successfully")
+        print("✅ Email sent successfully")
+        return True
 
     except Exception as e:
-        print("Email sending failed:", e)
+        print("❌ Email sending failed")
+        print("ERROR:", str(e))
+        return False
